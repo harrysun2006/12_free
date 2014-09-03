@@ -1,0 +1,1 @@
+function openJob(a){var b={"#onJobReturn":function(d,e,c){d["#check"]=false;window.location=IDS_CONTEXT_PATH+"/"}};IDS_JOB.openJob(a,b)}$(function(){initMenu(3);$.ajax({type:"POST",contentType:"application/json",url:IDS_CONTEXT_PATH+"/job/add_job",success:openJob,error:function(){ajaxError(arguments,this)}})});

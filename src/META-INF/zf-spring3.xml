@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:jee="http://www.springframework.org/schema/jee" xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:task="http://www.springframework.org/schema/task" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:util="http://www.springframework.org/schema/util" 
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+    http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-3.0.xsd
+    http://www.springframework.org/schema/jee http://www.springframework.org/schema/jee/spring-jee-3.0.xsd
+    http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd
+    http://www.springframework.org/schema/task http://www.springframework.org/schema/task/spring-task-3.0.xsd
+    http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+    http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-3.0.xsd">
+
+	<bean class="com.free.misc.SpringBeanPostProcessor" />
+ 
+	<bean id="pumDefault"
+		class="org.springframework.orm.jpa.persistenceunit.DefaultPersistenceUnitManager">
+    <property name="persistenceXmlLocation" value="classpath:META-INF/zf-persistence.xml"/>
+    <property name="dataSourceLookup">
+    	<bean class="org.springframework.jdbc.datasource.lookup.BeanFactoryDataSourceLookup" />
+		</property>
+	</bean>
+
+	<!-- Can use OpenJpaVendorAdapter and Apache OpenJPA as an alternative -->
+	<bean id="jvZF" class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter" 
+		p:showSql="false" p:generateDdl="false"/>
+
+	<bean id="jvZF2" class="org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter" 
+		p:showSql="false" p:generateDdl="false"/>
+
+	<!-- ZF DataSource, EntityManagerFactory & Transaction Manager -->
+	<bean id="dsZF" class="org.springframework.jndi.JndiObjectFactoryBean"
+		p:jndiName="java:comp/env/jdbc/dsZF" />
+
+	<bean id="emfZF" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean"
+		p:persistenceUnitManager-ref="pumDefault" p:persistenceUnitName="puZF" 
+		p:dataSource-ref="dsZF" p:jpaVendorAdapter-ref="jvZF" />
+
+	<bean id="tmZF" class="org.springframework.orm.jpa.JpaTransactionManager"
+		p:entityManagerFactory-ref="emfZF" p:dataSource-ref="dsZF" />
+
+	<bean id="dsZF2" class="org.springframework.jndi.JndiObjectFactoryBean"
+		p:jndiName="java:comp/env/jdbc/dsZF" />
+
+	<bean id="emfZF2" class="org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean"
+		p:persistenceUnitManager-ref="pumDefault" p:persistenceUnitName="puZF2" 
+		p:dataSource-ref="dsZF2" p:jpaVendorAdapter-ref="jvZF2" />
+
+	<bean id="tmZF2" class="org.springframework.orm.jpa.JpaTransactionManager"
+		p:entityManagerFactory-ref="emfZF2" p:dataSource-ref="dsZF2" />
+
+	<!-- Transactions AOP -->
+	<tx:advice id="txAdvice" transaction-manager="tmZF">
+		<tx:attributes>
+			<tx:method name="find*" read-only="true" />
+			<tx:method name="get*" read-only="true" />
+			<tx:method name="list*" read-only="true" />
+			<tx:method name="load*" read-only="true" />
+			<tx:method name="query*" read-only="true" />
+			<tx:method name="*" rollback-for="Exception" />
+		</tx:attributes>
+	</tx:advice>
+
+	<tx:advice id="txAdvice2" transaction-manager="tmZF2">
+		<tx:attributes>
+			<tx:method name="*" rollback-for="Exception" />
+		</tx:attributes>
+	</tx:advice>
+
+	<aop:config>
+		<aop:advisor pointcut="execution(* com.free.zf.service.*.*(..))" advice-ref="txAdvice"/>
+		<aop:advisor pointcut="execution(* com.free.zf.ajax.*.*(..))" advice-ref="txAdvice"/>
+		<aop:advisor pointcut="execution(* com.free.zf.log.*.*(..))" advice-ref="txAdvice2"/>
+	</aop:config>
+
+	<!-- Config & Misc -->
+	<!--bean id="config" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer"
+		p:location="classpath:zf.properties" /-->
+
+	<util:properties id="config" location="classpath:zf.properties" />
+
+	<bean class="org.springframework.beans.factory.config.PropertyOverrideConfigurer"
+		p:location="classpath:zf.properties" p:ignoreResourceNotFound="true" p:ignoreInvalidKeys="true"
+		p:localOverride="true" />
+
+	<bean class="org.springframework.orm.jpa.support.PersistenceAnnotationBeanPostProcessor" />
+	<bean class="org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor" />
+
+	<context:component-scan base-package="com.free.zf" />
+
+	<aop:aspectj-autoproxy/>
+
+	<!-- Shiro AOP, order = 10 -->
+	<bean class="com.free.misc.ShiroAuthorizationAdvisor"/>
+
+	<!-- Cache AOP, order = 20 -->
+	<bean id="cmZF" class="org.springframework.cache.ehcache.EhCacheManagerFactoryBean"
+		p:configLocation="classpath:ehcache.xml" />
+
+	<bean id="cfZF" class="org.springframework.cache.ehcache.EhCacheFactoryBean"
+		p:cacheManager-ref="cmZF" p:cacheName="DEFAULT_CACHE" />
+
+	<bean class="com.free.misc.MethodCacheAdvisor" p:cache-ref="cfZF" />
+
+	<!-- Logger AOP, order = 60 -->
+	<bean class="com.free.misc.LoggerAdvisor"/>
+
+	<!-- Ajax Error AOP, order = 90 -->
+	<bean class="com.free.misc.AjaxAdvisor"/>
+
+	<!-- MVC, 下面这句加上之后就只能靠注释驱动了, ajax必须配置此项  -->
+	<mvc:annotation-driven />
+	<mvc:resources location="/image/" mapping="/image/**" />
+	<mvc:resources location="/css/" mapping="/css/**" />
+	<mvc:resources location="/js/" mapping="/js/**" />
+	<mvc:resources location="/" mapping="/*.html" />
+
+	<bean id="vr1"
+		class="org.springframework.web.servlet.view.UrlBasedViewResolver"
+		p:viewClass="org.springframework.web.servlet.view.JstlView" 
+		p:contentType="text/html;charset=UTF-8" p:prefix="/WEB-INF/page/" p:suffix=".jsp" />
+
+	<bean id="vr2"
+		class="org.springframework.web.servlet.view.UrlBasedViewResolver"
+		p:viewClass="org.springframework.web.servlet.view.RedirectView" />
+
+	<bean id="vr3"
+    class="org.springframework.web.multipart.commons.CommonsMultipartResolver" p:maxUploadSize="10240000" />
+
+	<!--bean id="vr6"
+		class="org.springframework.web.servlet.view.ContentNegotiatingViewResolver" p:order="1">
+		<property name="mediaTypes">
+			<map>
+				<entry key="json" value="application/json"/>
+			</map>
+		</property>
+		<property name="defaultViews">
+			<list>
+      	<bean class="org.springframework.web.servlet.view.json.MappingJacksonJsonView" />
+			</list>
+		</property>
+		<property name="ignoreAcceptHeader" value="true" />
+	</bean>
+
+	<bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping" />
+	<bean class="org.springframework.web.servlet.mvc.annotation.AnnotationMethodHandlerAdapter" >
+		<property name="messageConverters">
+			<util:list id="beanList">
+      	<ref bean="mappingJacksonHttpMessageConverter"/>
+			</util:list>
+		</property>
+	</bean>
+	<bean id="mappingJacksonHttpMessageConverter" class="org.springframework.http.converter.json.MappingJacksonHttpMessageConverter">
+    <property name="supportedMediaTypes">
+			<list>
+				<value>application/json;charset=UTF-8</value>
+			</list>
+		</property>  
+	</bean>  
+	<context:annotation-config/-->  
+
+	<!-- Business Beans -->
+	<bean id="daoZF" class="com.free.zf.dao.JpaDao" p:entityManagerFactory-ref="emfZF" />
+	<bean id="daoZF2" class="com.free.zf.dao.JpaDao" p:entityManagerFactory-ref="emfZF2" />
+
+	<!-- Quartz -->
+	<!-- bean id="cronTask" class="com.free.misc.CronTask" /> 
+	<bean name="jobSayHello" class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"
+		p:targetObject-ref="cronTask" p:targetMethod="sayHello" />
+	<bean id="triSayHello" class="org.springframework.scheduling.quartz.CronTriggerBean"
+		p:jobDetail-ref="jobSayHello" p:cronExpression="0 */5 * * * ?" />
+	<bean class="org.springframework.scheduling.quartz.SchedulerFactoryBean" lazy-init="true" autowire="no">
+		<property name="triggers">
+			<list>
+				<ref bean="triSayHello" />
+			</list>
+		</property>
+		<property name="configLocation" value="classpath:quartz.properties" />
+	</bean-->
+
+</beans>

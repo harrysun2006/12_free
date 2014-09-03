@@ -1,0 +1,56 @@
+<persistence xmlns="http://java.sun.com/xml/ns/persistence"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://java.sun.com/xml/ns/persistence http://java.sun.com/xml/ns/persistence/persistence_2_0.xsd"
+	version="2.0">
+
+	<persistence-unit name="puZF" transaction-type="RESOURCE_LOCAL">
+		<provider>org.hibernate.ejb.HibernatePersistence</provider>
+		<non-jta-data-source>dsZF</non-jta-data-source>
+		<class>com.free.zf.dto.Access</class>
+		<class>com.free.zf.dto.Attachment</class>
+		<class>com.free.zf.dto.BuildType</class>
+		<class>com.free.zf.dto.ChooseCon</class>
+		<class>com.free.zf.dto.ChooseHouse</class>
+		<class>com.free.zf.dto.ChooseLog</class>
+		<class>com.free.zf.dto.ChoosePlan</class>
+		<class>com.free.zf.dto.Config</class>
+		<class>com.free.zf.dto.Contract</class>
+		<class>com.free.zf.dto.Dict</class>
+		<class>com.free.zf.dto.File</class>
+		<class>com.free.zf.dto.Forum</class>
+		<class>com.free.zf.dto.Garden</class>
+		<class>com.free.zf.dto.House</class>
+		<class>com.free.zf.dto.Log</class>
+		<class>com.free.zf.dto.Notice</class>
+		<class>com.free.zf.dto.Owner</class>
+		<class>com.free.zf.dto.Person</class>
+		<class>com.free.zf.dto.Plot</class>
+		<class>com.free.zf.dto.Post</class>
+		<class>com.free.zf.dto.Profile</class>
+		<class>com.free.zf.dto.Topic</class>
+		<class>com.free.zf.dto.User</class>
+		<properties>
+			<property name="hibernate.dialect" value="org.hibernate.dialect.OracleDialect" />
+			<property name="hibernate.archive.autodetection" value="false" />
+			<property name="hibernate.transaction.auto_close_session" value="false" />
+			<property name="hibernate.hbm2ddl.auto" value="false" />
+			<property name="hibernate.cache.use_query_cache" value="true" />
+			<property name="hibernate.cache.provider_class" value="org.hibernate.cache.EhCacheProvider"/>
+		</properties>
+	</persistence-unit>
+
+	<persistence-unit name="puZF2" transaction-type="RESOURCE_LOCAL">
+		<provider>org.hibernate.ejb.HibernatePersistence</provider>
+		<non-jta-data-source>dsZF2</non-jta-data-source>
+		<class>com.free.zf.dto.Log</class>
+		<properties>
+			<property name="hibernate.dialect" value="org.hibernate.dialect.OracleDialect" />
+			<property name="hibernate.archive.autodetection" value="false" />
+			<property name="hibernate.transaction.auto_close_session" value="false" />
+			<property name="hibernate.hbm2ddl.auto" value="false" />
+			<property name="hibernate.cache.use_query_cache" value="true" />
+			<property name="hibernate.cache.provider_class" value="org.hibernate.cache.EhCacheProvider"/>
+		</properties>
+	</persistence-unit>
+
+</persistence>

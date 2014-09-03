@@ -1,0 +1,162 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<script type="text/javascript" charset="utf-8" src="/js/jquery/jquery-1.6.4.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="/js/mac/core.js"></script>
+<script type="text/javascript" charset="utf-8" src="/js/mac/combo.js"></script>
+<script type="text/javascript" charset="utf-8" src="/js/mac/grid.js"></script>
+<script type="text/javascript" charset="utf-8" src="/js/mac/mousewheel.js"></script>
+<script type="text/javascript" charset="utf-8" src="/js/mac/pager.js"></script>
+<link rel="stylesheet" type="text/css" href="/css/mac.css" />
+<style type="text/css">
+.contextMenu {
+	position: absolute; width: 128px; z-index: 6; border: solid 1px #CCC;
+	background-color: #EEE; padding: 0; margin: 0; display: none;
+}
+.contextMenu li {
+	list-style: none; padding: 0; margin: 0; width: 128px; line-height: 24px;
+}
+.contextMenu .icon { margin: 3px; }
+.contextMenu li:hover { color: #390; background-color: #F5F8F9; }
+.contextMenu li.disabled { color: #AAA; cursor: default; }
+.contextMenu li:hover.disabled { background-color: transparent; }
+.contextMenu li.separator { border-top: solid 1px #CCC; }
+
+[action] { cursor: pointer; color: #339; }
+[action]:hover { color: #9C3; }
+.picker { cursor: pointer; background-color: #FFF; }
+
+.toolbar { padding: 0; margin: 0; list-style: none; }
+.toolbar .item {
+	float: left; height: 20px; line-height: 20px;
+	padding: 2px 4px; margin: 2px 2px 2px 0px;
+}
+.toolbar .sqrt { float: left; height: 12px; width: 1px; margin: 4px; }
+.toolbar .button { cursor: pointer; border: 1px solid #4790C5; }
+.toolbar .button:hover { color: #CC6601; }
+
+.form .item { margin: 8px 0 8px 0; clear: both; }
+.form .label {
+	float: left; width: 100px; height: 24px; line-height: 24px;
+	text-align: right; margin-right: 8px;
+}
+.form .txtll {
+	float: left; width: 100px; height: 24px; line-height: 24px;
+	text-align: left; margin-right: 8px;
+}
+.form .trigger { width: 24px; height: 24px; }
+.form .msg {
+	height: 32px; line-height: 32px; margin: 4px;
+	text-align: center; color: red;
+}
+.form .bottom { text-align: center; }
+
+.demoInfo { margin: 4px; }
+.demoPanel {
+	margin: 2px; height: 420px; width: 49%; float: left;
+	border: 1px solid #CCC;	overflow: hidden;
+}
+.demoSource {
+	margin: 2px; width: 49%; height: 420px; border: 1px solid #CCC;
+	background-color: #FFF; font-size: 12px; overflow: scroll;
+}
+
+.mask {
+	background: #EEE; position: absolute; left: 0; top: 0; text-align: center;
+	margin-top: 0; padding: 0; width: 100%; height: 100%;
+	filter: alpha(opacity = 30); opacity: .3; z-index: 1000;
+}
+.dialog {
+	position: absolute; z-index: 1001; float: left; left: 0; top: 0;
+	margin: 0 auto; overflow: auto; background: none;
+}
+.dialog .close {
+	position: absolute; background: url("/image/close.png");
+	width: 28px; height: 28px;
+}
+.dialog .wait {
+	text-align: center; padding: 5px; background: #FFF;
+	border: 1px solid #ccc; color: #69C;
+}
+.dialog .wait h3 { margin: 5px; }
+
+/* shared CSS for widgets, required */
+.fl { float: left; }
+.fr { float: right; }
+.clear { clear: both; }
+.hidden { display: none; }
+.icon {
+	overflow: hidden; float: left; width: 16px; height: 16px;
+	background-image: url('/image/icons.png');
+}
+.icon-triangle-1-n { background-position: 0 -16px; }
+.icon-triangle-1-s { background-position: -64px -16px; }
+.icon-minus { background-position: -48px -128px; }
+.icon-plus { background-position: -16px -128px; }
+
+/* other icons, not required */
+.icon-pencil { background-position: -64px -112px; }
+.icon-disk { background-position: -96px -112px; }
+.icon-newwin { background-position: -48px -80px; }
+.icon-close { background-position: -80px -128px; }
+.icon-arrowthick-1-e { background-position: -32px -48px; }
+.icon-arrowthick-1-w { background-position: -96px -48px; }
+#head { height: 60px; background-color: #333; }
+#head img { float: left; border: none; }
+#head .right { float: right; height: 60px; color: #FFF; text-align: right; }
+#head .right a { color: #CCC; font-size: 16px; color: #FFF; }
+#head .title {
+	color: #F93; float: left; height: 60px; line-height: 60px;
+	font-size: 40px; font-family: Impact, 'Comic Sans MS';
+}
+#head a { color: #F93; text-decoration: underline; }
+.hr { height: 12px; background: transparent url(/css/images/nm-b.png) repeat-x; }
+</style>
+</head>
+<body>
+<div id="demo" class="demoPanel"><script type="text/javascript">
+$(function(){
+	var dd = [];
+	for(var i=1;i<=25; i++)
+		dd.push({ code: i + '', name: 'Employee ' + i });
+	var cfg = {
+		keyField: 'code',
+		displayField: 'name',
+		multiSelect: false,
+		width: 200,
+		boxWidth: 200,
+		cols : [{
+			field: 'code', width: '30%'
+		},{
+			field: 'name', width: '70%'
+		}],
+		data: dd
+	};
+	var cfg1 = $.extend({}, cfg);
+	var cb1 = $('#combo1').mac('combo', cfg1);
+	$('#get1').click(function(){
+		alert(cb1.selected);
+	});
+	$('#set1').click(function(){
+		cb1.select(2);
+	});
+	var cfg2 = $.extend({}, cfg);
+	cfg2.multiSelect = true;
+	var cb2 = $('#combo2').mac('combo', cfg2);
+	$('#get2').click(function(){
+		alert(cb2.selected.join(','));
+	});
+	$('#set2').click(function(){
+		cb2.select([2,4]);
+	});
+});
+</script>
+<h3>multiSelect = false</h3>
+<div id="combo1" class="combo"></div><br/>
+&nbsp;&nbsp;<button id="get1">get1</button>&nbsp;<button id="set1">set1</button>
+<h3>multiSelect = true</h3>
+<div id="combo2" class="combo"></div><br/>
+&nbsp;&nbsp;<button id="get2">get2</button>&nbsp;<button id="set2">set2</button></div>
+</body>
+</html>
